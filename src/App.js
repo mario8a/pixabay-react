@@ -7,24 +7,56 @@ function App() {
 
   const [busqueda, guardarBusqueda] = useState('');
   const [imagenes, guardarImagenes] = useState([]);
+  const [paginaactual, guardarPaginaActual] = useState(1);
+  const [totalPginas, guardarTotalPaginas] = useState(1);
 
   useEffect(() => {
     const consultarAPI = async() => {
       if(busqueda === '') return;
 
       const imagenesPorPagina = 30;
-      const key = '16922924-a1b3625197c7ef6bad9ec05b6';
-      const url= `https://pixabay.com/api/?key=${key}&q=${busqueda}&per_page=${imagenesPorPagina}`;
+      const key = 'KEY';
+      const url= `https://pixabay.com/api/?key=${key}&q=${busqueda}&per_page=${imagenesPorPagina}&page=${paginaactual}`;
 
       const respuesta = await fetch(url);
       const resultado = await respuesta.json();
 
-      guardarImagenes(resultado.hits)
+      guardarImagenes(resultado.hits);
+
+      //calcular el toal de paginas
+      const calcularTotalPaginas = Math.ceil(resultado.totalHits / imagenesPorPagina);
+      guardarTotalPaginas(calcularTotalPaginas);
+
+      //mover la pantalla hacia arriba
+      const jumbotron = document.querySelector('.jumbotron');
+      jumbotron.scrollIntoView({behavior: 'smooth'})
     }
 
     consultarAPI();
 
-  },[busqueda])
+  },[busqueda, paginaactual]);
+
+  //regresar a la primera pagina al hacer una nueva busqueda
+  useEffect (() =>{
+    guardarPaginaActual(1);
+  },[busqueda]);
+
+
+  const paginaAnterior = () => {
+    const nuevaPaginaActual = paginaactual -1;
+
+    if(nuevaPaginaActual === 0) return;
+
+    guardarPaginaActual(nuevaPaginaActual);
+  }
+
+  const paginaSiguiente = () => {
+    const nuevaPaginaActual = paginaactual +1;
+
+    if(nuevaPaginaActual > totalPginas) return;
+
+    guardarPaginaActual(nuevaPaginaActual);
+  }
 
   return (
     <div className="container">
@@ -35,10 +67,23 @@ function App() {
           guardarBusqueda={guardarBusqueda}
         />
       </div>
-      <div className="row justify-content-center">
+      <div className="row justify-content-center mb-5">
         <ListadoImagenes
           imagenes={imagenes}
         />
+        
+        {(paginaactual === 1) ? null : (
+          <button type="button" className="btn btn-info mr-1" onClick={paginaAnterior}>
+          &laquo; Anterior 
+          </button>
+        )}
+
+        {(paginaactual === totalPginas) ? null : (
+          <button type="button" className="btn btn-info" onClick={paginaSiguiente}>
+          Siguiente &raquo;
+          </button>
+        )}
+
       </div>
     </div>
   );
