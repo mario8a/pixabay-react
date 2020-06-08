@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import Formulario from './components/Formulario';
 import ListadoImagenes from './components/ListadoImagenes';
+import { APIKey } from './secrets/api';
 
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
       if(busqueda === '') return;
 
       const imagenesPorPagina = 30;
-      const key = 'KEY';
+      const key = APIKey;
       const url= `https://pixabay.com/api/?key=${key}&q=${busqueda}&per_page=${imagenesPorPagina}&page=${paginaactual}`;
 
       const respuesta = await fetch(url);
